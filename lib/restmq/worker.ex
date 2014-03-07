@@ -34,11 +34,6 @@ defmodule Restmq.Worker do
     _init(h, q, p) |> initial_state
   end
 
-  defcast set_policy(type), state: s do
-    _set_policy(s, type)
-    state(s, policy: type) |> new_state
-  end
-  
   defp _stats(s) do
     H.get(state(s, :host) <> "/stats/#{state(s, :queue)}/" ) |> process_res
   end
@@ -76,15 +71,15 @@ defmodule Restmq.Worker do
     reply(value)
   end
   
-  defcall stream, state: s, from: {caller, ref} do
+  defcall stream, state: s, from: {caller, _ref} do
     H.get(state(s, :host) <> "/c/#{state(s, :queue)}", [], [stream_to: caller] ) 
         |> reply
   end
   
   defp process_res(res) do
     case JSON.decode(res.body) do
-      { :ok, json }            -> json
-      { :unexpected_token, _ } -> [{"value", "null"}]
+      { :ok, json } -> json
+      _             -> [{"value", "null"}]
     end
   end
 end 
