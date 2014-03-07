@@ -2,5 +2,9 @@ box: bitwalker/elixir@0.0.7
 
 build:
   steps:
-    - MIX_ENV=test mix deps.get
-    - mix test
+    - script: 
+        name: install deps with mix
+        code: MIX_ENV=test mix deps.get
+    - script:
+        name: run tests with mix
+        code: mix test
