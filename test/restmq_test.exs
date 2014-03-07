@@ -1,7 +1,7 @@
 defmodule RestmqTest do
   use ExUnit.Case
-
-  {:ok, pid } = Restmq.Worker.start [host: "http://localhost:8089", queue: "test-queue"]
+  
+  {:ok, pid } = Restmq.Worker.start [host: "http://127.0.0.1:8089", queue: "test-queue"]
   @q pid
   
   setup do
@@ -51,5 +51,28 @@ defmodule RestmqTest do
     handle_msg(id, fn(val) -> assert val == "test" end)
     handle_msg(id, fn(val) -> assert val == "test" end)
     handle_msg(id, fn(val) -> assert val == "test" end)
+  end
+  
+  test "it can set policy" do
+    assert :ok = Restmq.set_policy @q, :broadcast
+    assert :ok = Restmq.set_policy @q, :roundrobin
+  end
+  
+  test "it can set policy on init" do
+    assert { :ok, queue } = Restmq.Worker.start [host: "http://127.0.0.1:8089", policy: :broadcast]
+    assert { :ok, queue } = Restmq.Worker.start [host: "http://127.0.0.1:8089", policy: :roundrobin]
+  end
+  
+  test "it can get the current policy" do
+    { :ok, queue } = Restmq.Worker.start [host: "http://127.0.0.1:8089", policy: :broadcast]
+    assert :broadcast = Restmq.policy queue
+  end
+
+  test "it can get the policy when it is set after initialization" do
+    { :ok, queue } = Restmq.Worker.start [host: "http://127.0.0.1:8089", queue: "test-policy"]
+    assert nil = Restmq.policy queue
+    
+    Restmq.set_policy queue, :roundrobin
+    assert :roundrobin = Restmq.policy queue
   end
 end

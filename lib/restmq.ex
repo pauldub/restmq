@@ -10,19 +10,12 @@ defmodule Restmq do
     Restmq.Supervisor.start_link
   end
   
-  def post(w, message) do
-    W.post w, message
-  end
+  def set_policy(w, policy), do: W.set_policy(w, policy)
+  def policy(w), do: W.policy w
 
-  def clear(w) do
-    W.clear w
-  end
+  def clear(w), do: W.clear w
 
-  def get(w) do
-    W.get w
-  end
-
-  def stream(w) do
-    W.stream w
-  end
+  def post(w, message), do: W.post(w, message)
+  def get(w), do: W.get w
+  def stream(w), do: W.stream w
 end
