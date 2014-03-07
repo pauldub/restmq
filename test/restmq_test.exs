@@ -8,10 +8,11 @@ defmodule RestmqTest do
     Restmq.clear @q
   end
 
-  defmacro handle_msg(id, on_msg) do
+  defmacro handle_msg(res, on_msg) do
     quote do
+      id = unquote(res).id
       receive do
-        HTTPoison.AsyncChunk[id: unquote(id), chunk: c] ->
+        HTTPoison.AsyncChunk[id: id, chunk: c] ->
           { :ok, json } = JSON.decode c
           { :ok, val }  = JSON.decode json["value"]
           unquote(on_msg).(val)
@@ -46,11 +47,10 @@ defmodule RestmqTest do
     Restmq.post @q, "test"
 
     res = Restmq.stream @q
-    id = res.id
     
-    handle_msg(id, fn(val) -> assert val == "test" end)
-    handle_msg(id, fn(val) -> assert val == "test" end)
-    handle_msg(id, fn(val) -> assert val == "test" end)
+    handle_msg(res, fn(val) -> assert val == "test" end)
+    handle_msg(res, fn(val) -> assert val == "test" end)
+    handle_msg(res, fn(val) -> assert val == "test" end)
   end
   
   test "it can set policy" do
@@ -59,8 +59,8 @@ defmodule RestmqTest do
   end
   
   test "it can set policy on init" do
-    assert { :ok, queue } = Restmq.Worker.start [host: "http://127.0.0.1:8089", policy: :broadcast]
-    assert { :ok, queue } = Restmq.Worker.start [host: "http://127.0.0.1:8089", policy: :roundrobin]
+    assert { :ok, _queue } = Restmq.Worker.start [host: "http://127.0.0.1:8089", policy: :broadcast]
+    assert { :ok, _queue } = Restmq.Worker.start [host: "http://127.0.0.1:8089", policy: :roundrobin]
   end
   
   test "it can get the current policy" do
@@ -68,11 +68,17 @@ defmodule RestmqTest do
     assert :broadcast = Restmq.policy queue
   end
 
-  test "it can get the policy when it is set after initialization" do
+  test "it correctly set the policy when it after initialization" do
     { :ok, queue } = Restmq.Worker.start [host: "http://127.0.0.1:8089", queue: "test-policy"]
     assert nil = Restmq.policy queue
     
     Restmq.set_policy queue, :roundrobin
+    
     assert :roundrobin = Restmq.policy queue
+  end
+  
+  test "it can get a queue lenght" do
+    Restmq.clear @q
+    assert 0 = Restmq.length @q
   end
 end

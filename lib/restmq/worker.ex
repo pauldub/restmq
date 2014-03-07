@@ -39,6 +39,23 @@ defmodule Restmq.Worker do
     state(s, policy: type) |> new_state
   end
   
+  defp _stats(s) do
+    H.get(state(s, :host) <> "/stats/#{state(s, :queue)}/" ) |> process_res
+  end
+
+  defcall length, state: s do
+    reply(_stats(s)["len"])
+  end
+  
+  defcall stats, state: s do
+    reply(_stats s)
+  end
+
+  defcast set_policy(type), state: s do
+    _set_policy(s, type)
+    state(s, policy: type) |> new_state
+  end
+  
   defcall policy, state: s, do: state(s, :policy) |> reply
   
   defcast post(message), state: s do

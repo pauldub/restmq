@@ -13,6 +13,8 @@ defmodule Restmq do
   def set_policy(w, policy), do: W.set_policy(w, policy)
   def policy(w), do: W.policy w
 
+  def stats(w), do: W.stats w
+  def length(w), do: W.length w
   def clear(w), do: W.clear w
 
   def post(w, message), do: W.post(w, message)
