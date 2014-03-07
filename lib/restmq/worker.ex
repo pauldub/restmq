@@ -28,7 +28,6 @@ defmodule Restmq.Worker do
   end
   
   defcall stream, state: s, from: {caller, ref} do
-    IO.puts "Start streaming messages to #{inspect ref}"
     H.get(state(s, :host) <> "/c/#{state(s, :queue)}", [], [stream_to: caller] ) 
         |> reply
   end
