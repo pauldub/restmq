@@ -8,7 +8,7 @@ defmodule Restmq.Supervisor do
   def init([]) do
     children = [
       # Define workers and child supervisors to be supervised
-      # worker(Restmq.Worker, [])
+      # worker(Restmq.Worker, [[host: "http://localhost:8089", queue: "poloku"]])
     ]
 
     # See http://elixir-lang.org/docs/stable/Supervisor.Behaviour.html
